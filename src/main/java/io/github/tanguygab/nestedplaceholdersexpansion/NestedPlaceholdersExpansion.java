@@ -3,16 +3,21 @@ package io.github.tanguygab.nestedplaceholdersexpansion;
 
 import me.clip.placeholderapi.PlaceholderAPI;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
+import me.clip.placeholderapi.expansion.Relational;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.entity.Player;
 
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
 
-public final class NestedPlaceholdersExpansion extends PlaceholderExpansion {
+public final class NestedPlaceholdersExpansion extends PlaceholderExpansion implements Relational {
 
     @Override
     public List<String> getPlaceholders() {
-        return Collections.singletonList("%nested_<num>_<placeholder>%");
+        return Arrays.asList("%nested_<placeholder>%",
+                "%nested_<num>_<placeholder>%",
+                "%rel_nested_<placeholder>%",
+                "%rel_nested_<num>_<placeholder>%");
     }
 
     @Override
@@ -27,7 +32,7 @@ public final class NestedPlaceholdersExpansion extends PlaceholderExpansion {
 
     @Override
     public String getVersion() {
-        return "1.0";
+        return "1.2";
     }
 
     @Override
@@ -43,6 +48,28 @@ public final class NestedPlaceholdersExpansion extends PlaceholderExpansion {
         params = "%"+params+"%";
 
         for (int i = 0; i < number; i++) {
+            params = PlaceholderAPI.setBracketPlaceholders(player,params);
+            params = PlaceholderAPI.setPlaceholders(player,params);
+        }
+        return params;
+    }
+
+
+    @Override
+    public String onPlaceholderRequest(Player player, Player player1, String params) {
+        String num = params.split("_")[0];
+        int number = 2;
+        try {number = Integer.parseInt(num);}
+        catch (Exception e) {num = "";}
+
+        if (!num.equals(""))
+            params = params.replace(num+"_","");
+
+        params = "%"+params+"%";
+
+        for (int i = 0; i < number; i++) {
+            params = PlaceholderAPI.setRelationalPlaceholders(player,player1,params);
+            params = PlaceholderAPI.setBracketPlaceholders(player,params);
             params = PlaceholderAPI.setPlaceholders(player,params);
         }
         return params;
