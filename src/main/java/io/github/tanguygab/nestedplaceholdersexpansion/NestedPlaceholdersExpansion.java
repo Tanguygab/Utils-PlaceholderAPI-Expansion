@@ -32,7 +32,7 @@ public final class NestedPlaceholdersExpansion extends PlaceholderExpansion impl
 
     @Override
     public String getVersion() {
-        return "1.2";
+        return "1.2.1";
     }
 
     @Override
