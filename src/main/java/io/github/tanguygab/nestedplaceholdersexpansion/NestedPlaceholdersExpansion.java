@@ -69,8 +69,8 @@ public final class NestedPlaceholdersExpansion extends PlaceholderExpansion impl
 
         for (int i = 0; i < number; i++) {
             params = PlaceholderAPI.setRelationalPlaceholders(player,player1,params);
-            params = PlaceholderAPI.setBracketPlaceholders(player,params);
-            params = PlaceholderAPI.setPlaceholders(player,params);
+            params = PlaceholderAPI.setBracketPlaceholders(player1,params);
+            params = PlaceholderAPI.setPlaceholders(player1,params);
         }
         return params;
     }
