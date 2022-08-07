@@ -7,8 +7,7 @@ import me.clip.placeholderapi.expansion.Relational;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 public final class NestedPlaceholdersExpansion extends PlaceholderExpansion implements Relational {
 
@@ -32,13 +31,13 @@ public final class NestedPlaceholdersExpansion extends PlaceholderExpansion impl
 
     @Override
     public String getVersion() {
-        return "1.2.1";
+        return "1.3.0";
     }
 
     @Override
     public String onRequest(OfflinePlayer player, String params) {
         String num = params.split("_")[0];
-        int number = 2;
+        int number = 1;
         try {number = Integer.parseInt(num);}
         catch (Exception e) {num = "";}
 
@@ -47,8 +46,9 @@ public final class NestedPlaceholdersExpansion extends PlaceholderExpansion impl
 
         params = "%"+params+"%";
 
+
         for (int i = 0; i < number; i++) {
-            params = PlaceholderAPI.setBracketPlaceholders(player,params);
+            params = parseBracketPlaceholders(player,params,findBracketPlaceholders(params));
             params = PlaceholderAPI.setPlaceholders(player,params);
         }
         return params;
@@ -73,5 +73,44 @@ public final class NestedPlaceholdersExpansion extends PlaceholderExpansion impl
             params = PlaceholderAPI.setPlaceholders(player1,params);
         }
         return params;
+    }
+
+    public Map<Integer,Integer> findBracketPlaceholders(String params) {
+        char[] chars = params.toCharArray();
+        Map<Integer,Integer> innerPlaceholders = new HashMap<>();
+        List<Integer> brackets = new ArrayList<>();
+        for (int i=0; i < chars.length; i++) {
+            char c = chars[i];
+            boolean escaped = i != 0 && chars[i-1]=='\\';
+            if (escaped) continue;
+            if (c == '{')
+                brackets.add(i);
+            if (c == '}' && !brackets.isEmpty()) {
+                innerPlaceholders.put(brackets.get(brackets.size()-1),i);
+                brackets.remove(brackets.size()-1);
+            }
+        }
+        return innerPlaceholders;
+    }
+
+    public String parseBracketPlaceholders(OfflinePlayer player, String params, Map<Integer,Integer> innerPlaceholders) {
+        StringBuilder str = new StringBuilder(params);
+        Map<Integer,Integer> newPositions = new HashMap<>();
+        for (int pos1 : innerPlaceholders.keySet()) {
+            int pos2 = innerPlaceholders.get(pos1);
+
+            for (int p : newPositions.keySet()) {
+                int l = newPositions.get(p);
+                if (p < pos1) pos1-=l;
+                if (p < pos2) pos2-=l;
+            }
+            String sub = str.substring(pos1,pos2+1);
+            String parsed = PlaceholderAPI.setBracketPlaceholders(player,sub);
+
+            str.replace(pos1, pos2 + 1, parsed);
+
+            newPositions.put(pos1,sub.length()-parsed.length());
+        }
+        return str.toString();
     }
 }
