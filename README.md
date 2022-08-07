@@ -2,8 +2,8 @@
 Parse nested PAPI placeholders within PAPI placeholders
 
 # Usage
-`%nested_<placeholder>%` - Parses the placeholder 2 times  
-`%nested_#_<placeholder>%` - Parses the placeholder # times
+`%nested_<placeholder>%` - Parses the placeholder once with inner placeholders  
+`%nested_#_<placeholder>%` - Parses the placeholder # times with inner placeholders each time
 
 # Example
 `%javascript_test%` returns `%player_name%` which returns a player's name  
