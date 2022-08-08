@@ -31,7 +31,7 @@ public final class NestedPlaceholdersExpansion extends PlaceholderExpansion impl
 
     @Override
     public String getVersion() {
-        return "1.3.0";
+        return "1.3.1";
     }
 
     @Override
@@ -48,7 +48,7 @@ public final class NestedPlaceholdersExpansion extends PlaceholderExpansion impl
 
 
         for (int i = 0; i < number; i++) {
-            params = parseBracketPlaceholders(player,params,findBracketPlaceholders(params));
+            params = parseBracketPlaceholders(player,params.replace("\\",""),findBracketPlaceholders(params));
             params = PlaceholderAPI.setPlaceholders(player,params);
         }
         return params;
@@ -77,16 +77,20 @@ public final class NestedPlaceholdersExpansion extends PlaceholderExpansion impl
 
     public Map<Integer,Integer> findBracketPlaceholders(String params) {
         char[] chars = params.toCharArray();
+        int newPos = 0;
         Map<Integer,Integer> innerPlaceholders = new HashMap<>();
         List<Integer> brackets = new ArrayList<>();
         for (int i=0; i < chars.length; i++) {
             char c = chars[i];
             boolean escaped = i != 0 && chars[i-1]=='\\';
-            if (escaped) continue;
+            if (escaped) {
+                newPos++;
+                continue;
+            }
             if (c == '{')
-                brackets.add(i);
+                brackets.add(i-newPos);
             if (c == '}' && !brackets.isEmpty()) {
-                innerPlaceholders.put(brackets.get(brackets.size()-1),i);
+                innerPlaceholders.put(brackets.get(brackets.size()-1),i-newPos);
                 brackets.remove(brackets.size()-1);
             }
         }
