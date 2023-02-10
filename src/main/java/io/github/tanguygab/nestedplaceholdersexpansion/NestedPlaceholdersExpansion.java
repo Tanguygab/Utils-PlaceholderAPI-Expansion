@@ -31,7 +31,7 @@ public final class NestedPlaceholdersExpansion extends PlaceholderExpansion impl
 
     @Override
     public String getVersion() {
-        return "1.3.2";
+        return "1.3.3";
     }
 
     @Override
@@ -99,7 +99,7 @@ public final class NestedPlaceholdersExpansion extends PlaceholderExpansion impl
 
     public String parseBracketPlaceholders(OfflinePlayer player, String params, Map<Integer,Integer> innerPlaceholders) {
         StringBuilder str = new StringBuilder(params);
-        Map<Integer,Integer> newPositions = new HashMap<>();
+        Map<Integer,Integer> newPositions = new LinkedHashMap<>();
         for (int pos1 : innerPlaceholders.keySet()) {
             int pos2 = innerPlaceholders.get(pos1);
 
