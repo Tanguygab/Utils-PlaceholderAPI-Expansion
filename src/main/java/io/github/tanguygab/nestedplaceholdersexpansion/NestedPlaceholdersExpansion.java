@@ -31,7 +31,7 @@ public final class NestedPlaceholdersExpansion extends PlaceholderExpansion impl
 
     @Override
     public String getVersion() {
-        return "1.3.1";
+        return "1.3.2";
     }
 
     @Override
@@ -78,7 +78,7 @@ public final class NestedPlaceholdersExpansion extends PlaceholderExpansion impl
     public Map<Integer,Integer> findBracketPlaceholders(String params) {
         char[] chars = params.toCharArray();
         int newPos = 0;
-        Map<Integer,Integer> innerPlaceholders = new HashMap<>();
+        Map<Integer,Integer> innerPlaceholders = new LinkedHashMap<>();
         List<Integer> brackets = new ArrayList<>();
         for (int i=0; i < chars.length; i++) {
             char c = chars[i];
