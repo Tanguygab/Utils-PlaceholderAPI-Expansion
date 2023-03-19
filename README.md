@@ -1,4 +1,4 @@
-# Parse-Expansion
+# Placeholder-Expansion
 Parse colors and nested PAPI placeholders within PAPI placeholders
 
 # Usage
