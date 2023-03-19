@@ -4,6 +4,7 @@ package io.github.tanguygab.placeholderexpansion;
 import me.clip.placeholderapi.PlaceholderAPI;
 import me.clip.placeholderapi.expansion.Relational;
 import net.md_5.bungee.api.ChatColor;
+import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
@@ -16,6 +17,7 @@ public final class PlaceholderExpansion extends me.clip.placeholderapi.expansion
         return Arrays.asList("%placeholder_parse_<placeholder>%",
                 "%placeholder_parse:<num>_<placeholder>%",
                 "%placeholder_color_<placeholder>%",
+                "%placeholder_parseother:[name|placeholder]_<placeholder>%",
                 "%rel_placeholder_parse_<placeholder>%",
                 "%rel_placeholder_parse:<num>_<placeholder>%",
                 "%rel_placeholder_color_<placeholder>%");
@@ -46,20 +48,23 @@ public final class PlaceholderExpansion extends me.clip.placeholderapi.expansion
     }
 
     private String process(String params, OfflinePlayer viewer, Player target) {
-        String output = null;
         String arg = params.split("_")[0];
         String text = params.substring(arg.length()+1);
+        if (arg.startsWith("parseother:[") && params.contains("]")) {
+            String placeholder = params.substring(12,params.indexOf("]"));
+            String name = processParse(placeholder,1,viewer,target).replace("%","");
+            return processParse(params.substring(params.indexOf("]")+2),1, Bukkit.getServer().getOfflinePlayer(name),target);
+        }
         if (arg.startsWith("parse")) {
             int number = 1;
-            if (arg.startsWith("parse:")) {
+            if (arg.startsWith("parse:"))
                 try {number = Integer.parseInt(arg.substring(6));}
                 catch (Exception ignored) {}
-            }
-            output = processParse(text,number,viewer,target);
+            return processParse(text,number,viewer,target);
         }
-        else if (arg.equalsIgnoreCase("color"))
-            output = ChatColor.translateAlternateColorCodes('&',processParse(text,1,viewer,target));
-        return output;
+        if (arg.equalsIgnoreCase("color"))
+            return ChatColor.translateAlternateColorCodes('&',processParse(text,1,viewer,target));
+        return null;
     }
     private String processParse(String text, int number, OfflinePlayer viewer, Player target) {
         text = "%"+text+"%";
