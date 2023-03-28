@@ -1,7 +1,8 @@
-package io.github.tanguygab.placeholderexpansion;
+package io.github.tanguygab.utilsexpansion;
 
 
 import me.clip.placeholderapi.PlaceholderAPI;
+import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import me.clip.placeholderapi.expansion.Relational;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
@@ -10,22 +11,22 @@ import org.bukkit.entity.Player;
 
 import java.util.*;
 
-public final class PlaceholderExpansion extends me.clip.placeholderapi.expansion.PlaceholderExpansion implements Relational {
+public final class UtilsExpansion extends PlaceholderExpansion implements Relational {
 
     @Override
     public List<String> getPlaceholders() {
-        return Arrays.asList("%placeholder_parse_<placeholder>%",
-                "%placeholder_parse:<num>_<placeholder>%",
-                "%placeholder_color_<placeholder>%",
-                "%placeholder_parseother:[name|placeholder]_<placeholder>%",
-                "%rel_placeholder_parse_<placeholder>%",
-                "%rel_placeholder_parse:<num>_<placeholder>%",
-                "%rel_placeholder_color_<placeholder>%");
+        return Arrays.asList("%utils_parse_<placeholder>%",
+                "%utils_parse:<num>_<placeholder>%",
+                "%utils_color_<placeholder>%",
+                "%utils_parseother:[name|placeholder]_<placeholder>%",
+                "%rel_utils_parse_<placeholder>%",
+                "%rel_utils_parse:<num>_<placeholder>%",
+                "%rel_utils_color_<placeholder>%");
     }
 
     @Override
     public String getIdentifier() {
-        return "placeholder";
+        return "utils";
     }
 
     @Override
