@@ -9,13 +9,15 @@ import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
+import javax.annotation.Nonnull;
 import java.util.*;
 
 public final class UtilsExpansion extends PlaceholderExpansion implements Relational {
 
     @Override
-    public List<String> getPlaceholders() {
-        return Arrays.asList("%utils_parse_<placeholder>%",
+    public @Nonnull List<String> getPlaceholders() {
+        return Arrays.asList("%utils_escape_<placeholder>%",
+                "%utils_parse_<placeholder>%",
                 "%utils_parse:<num>_<placeholder>%",
                 "%utils_color_<placeholder>%",
                 "%utils_parseother:[name|placeholder]_<placeholder>%",
@@ -25,22 +27,22 @@ public final class UtilsExpansion extends PlaceholderExpansion implements Relati
     }
 
     @Override
-    public String getIdentifier() {
+    public @Nonnull String getIdentifier() {
         return "utils";
     }
 
     @Override
-    public String getAuthor() {
+    public @Nonnull String getAuthor() {
         return "Tanguygab";
     }
 
     @Override
-    public String getVersion() {
-        return "1.0.0";
+    public @Nonnull String getVersion() {
+        return "1.0.1";
     }
 
     @Override
-    public String onRequest(OfflinePlayer player, String params) {
+    public String onRequest(OfflinePlayer player, @Nonnull String params) {
         return process(params,player,null);
     }
     @Override
@@ -48,9 +50,11 @@ public final class UtilsExpansion extends PlaceholderExpansion implements Relati
         return process(params,viewer,target);
     }
 
+    @SuppressWarnings("deprecation")
     private String process(String params, OfflinePlayer viewer, Player target) {
         String arg = params.split("_")[0];
         String text = params.substring(arg.length()+1);
+        if (arg.equalsIgnoreCase("escape")) return "%"+text+"%";
         if (arg.startsWith("parseother:[") && params.contains("]")) {
             String placeholder = params.substring(12,params.indexOf("]"));
             String name = processParse(placeholder,1,viewer,target).replace("%","");
