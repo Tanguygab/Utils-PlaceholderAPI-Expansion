@@ -9,38 +9,43 @@ import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
+import javax.annotation.Nonnull;
 import java.util.*;
 
 public final class UtilsExpansion extends PlaceholderExpansion implements Relational {
 
-    @Override
-    public List<String> getPlaceholders() {
-        return Arrays.asList("%utils_parse_<placeholder>%",
-                "%utils_parse:<num>_<placeholder>%",
-                "%utils_color_<placeholder>%",
-                "%utils_parseother:[name|placeholder]_<placeholder>%",
-                "%rel_utils_parse_<placeholder>%",
-                "%rel_utils_parse:<num>_<placeholder>%",
-                "%rel_utils_color_<placeholder>%");
+    private final List<String> placeholders = new ArrayList<>();
+
+    public UtilsExpansion() {
+        List<String> placeholders = Arrays.asList("parse","parse:<num>","color","uncolor","uncolor:each","parseother:[name|placeholder]","escape");
+        placeholders.forEach(placeholder->{
+            this.placeholders.add("%utils_"+placeholder+"_<placeholder>%");
+            this.placeholders.add("%rel_utils_"+placeholder+"_<placeholder>%");
+        });
     }
 
     @Override
-    public String getIdentifier() {
+    public @Nonnull List<String> getPlaceholders() {
+        return placeholders;
+    }
+
+    @Override
+    public @Nonnull String getIdentifier() {
         return "utils";
     }
 
     @Override
-    public String getAuthor() {
+    public @Nonnull String getAuthor() {
         return "Tanguygab";
     }
 
     @Override
-    public String getVersion() {
-        return "1.0.0";
+    public @Nonnull String getVersion() {
+        return "1.0.2";
     }
 
     @Override
-    public String onRequest(OfflinePlayer player, String params) {
+    public String onRequest(OfflinePlayer player, @Nonnull String params) {
         return process(params,player,null);
     }
     @Override
@@ -48,9 +53,11 @@ public final class UtilsExpansion extends PlaceholderExpansion implements Relati
         return process(params,viewer,target);
     }
 
+    @SuppressWarnings("deprecation")
     private String process(String params, OfflinePlayer viewer, Player target) {
         String arg = params.split("_")[0];
         String text = params.substring(arg.length()+1);
+        if (arg.equalsIgnoreCase("escape")) return "%"+text+"%";
         if (arg.startsWith("parseother:[") && params.contains("]")) {
             String placeholder = params.substring(12,params.indexOf("]"));
             String name = processParse(placeholder,1,viewer,target).replace("%","");
@@ -63,17 +70,27 @@ public final class UtilsExpansion extends PlaceholderExpansion implements Relati
                 catch (Exception ignored) {}
             return processParse(text,number,viewer,target);
         }
-        if (arg.equalsIgnoreCase("color"))
-            return ChatColor.translateAlternateColorCodes('&',processParse(text,1,viewer,target));
+        if (arg.equalsIgnoreCase("color")) return color(processParse(text,1,viewer,target));
+        if (arg.startsWith("uncolor")) return ChatColor.stripColor(color(processParse(text,1,viewer,target,arg.equalsIgnoreCase("uncolor:each"))));
         return null;
     }
+
+    private String color(String text) {
+        return ChatColor.translateAlternateColorCodes('&',text);
+    }
+
+
     private String processParse(String text, int number, OfflinePlayer viewer, Player target) {
+        return processParse(text,number,viewer,target,false);
+    }
+    private String processParse(String text, int number, OfflinePlayer viewer, Player target, boolean uncolorEach) {
         text = "%"+text+"%";
 
         for (int i = 0; i < number; i++) {
             findBracketPlaceholders(text);
-            text = parseBracketPlaceholders(text.replace("\\",""),viewer,null);
+            text = parseBracketPlaceholders(text,viewer,null);
             text = parsePlaceholders(text,viewer,target);
+            if (uncolorEach) text = ChatColor.stripColor(color(text));
         }
         return text;
     }
@@ -110,7 +127,7 @@ public final class UtilsExpansion extends PlaceholderExpansion implements Relati
 
     public String parseBracketPlaceholders(String params, OfflinePlayer viewer, Player target) {
         Map<Integer,Integer> innerPlaceholders = this.innerPlaceholders.get(params);
-        StringBuilder str = new StringBuilder(params);
+        StringBuilder str = new StringBuilder(params.replace("\\",""));
         Map<Integer,Integer> newPositions = new LinkedHashMap<>();
         for (int pos1 : innerPlaceholders.keySet()) {
             int pos2 = innerPlaceholders.get(pos1);
