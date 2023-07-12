@@ -88,9 +88,8 @@ public final class UtilsExpansion extends PlaceholderExpansion implements Relati
 
         for (int i = 0; i < number; i++) {
             findBracketPlaceholders(text);
-            text = parseBracketPlaceholders(text,viewer,null);
+            text = parseBracketPlaceholders(text,viewer,null,uncolorEach);
             text = parsePlaceholders(text,viewer,target);
-            if (uncolorEach) text = ChatColor.stripColor(color(text));
         }
         return text;
     }
@@ -125,7 +124,7 @@ public final class UtilsExpansion extends PlaceholderExpansion implements Relati
         this.innerPlaceholders.put(params,innerPlaceholders);
     }
 
-    public String parseBracketPlaceholders(String params, OfflinePlayer viewer, Player target) {
+    public String parseBracketPlaceholders(String params, OfflinePlayer viewer, Player target, boolean uncolorEach) {
         Map<Integer,Integer> innerPlaceholders = this.innerPlaceholders.get(params);
         StringBuilder str = new StringBuilder(params.replace("\\",""));
         Map<Integer,Integer> newPositions = new LinkedHashMap<>();
@@ -139,7 +138,7 @@ public final class UtilsExpansion extends PlaceholderExpansion implements Relati
             }
             String sub = str.substring(pos1,pos2+1);
             String parsed = parsePlaceholders("%"+sub.substring(1,sub.length()-1)+"%",viewer,target);
-
+            if (uncolorEach) parsed = ChatColor.stripColor(color(parsed));
             str.replace(pos1, pos2 + 1, parsed);
 
             newPositions.put(pos1,sub.length()-parsed.length());
