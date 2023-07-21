@@ -17,7 +17,7 @@ public final class UtilsExpansion extends PlaceholderExpansion implements Relati
     private final List<String> placeholders = new ArrayList<>();
 
     public UtilsExpansion() {
-        List<String> placeholders = Arrays.asList("parse","parse:<num>","color","uncolor","uncolor:each","parseother:[name|placeholder]","escape");
+        List<String> placeholders = Arrays.asList("parse","parse:<num>","color","uncolor","uncolor:each","parseother:[name|placeholder]","escape","parserel:[name|placeholder]");
         placeholders.forEach(placeholder->{
             this.placeholders.add("%utils_"+placeholder+"_<placeholder>%");
             this.placeholders.add("%rel_utils_"+placeholder+"_<placeholder>%");
@@ -41,7 +41,7 @@ public final class UtilsExpansion extends PlaceholderExpansion implements Relati
 
     @Override
     public @Nonnull String getVersion() {
-        return "1.0.2";
+        return "1.0.3";
     }
 
     @Override
@@ -58,10 +58,16 @@ public final class UtilsExpansion extends PlaceholderExpansion implements Relati
         String arg = params.split("_")[0];
         String text = params.substring(arg.length()+1);
         if (arg.equalsIgnoreCase("escape")) return "%"+text+"%";
+
         if (arg.startsWith("parseother:[") && params.contains("]")) {
             String placeholder = params.substring(12,params.indexOf("]"));
             String name = processParse(placeholder,1,viewer,target).replace("%","");
             return processParse(params.substring(params.indexOf("]")+2),1, Bukkit.getServer().getOfflinePlayer(name),target);
+        }
+        if (arg.startsWith("parserel:[") && params.contains("]")) {
+            String placeholder = params.substring(10,params.indexOf("]"));
+            String name = processParse(placeholder,1,viewer,target).replace("%","");
+            return processParse(params.substring(params.indexOf("]")+2),1, viewer,Bukkit.getServer().getPlayer(name));
         }
         if (arg.startsWith("parse")) {
             int number = 1;
@@ -73,6 +79,12 @@ public final class UtilsExpansion extends PlaceholderExpansion implements Relati
         if (arg.equalsIgnoreCase("color")) return color(processParse(text,1,viewer,target));
         if (arg.startsWith("uncolor")) return ChatColor.stripColor(color(processParse(text,1,viewer,target,arg.equalsIgnoreCase("uncolor:each"))));
         return null;
+    }
+
+    private String processPlayerArg(int sub, String params, OfflinePlayer viewer, Player target, Player v, Player t) {
+        String placeholder = params.substring(sub,params.indexOf("]"));
+        String name = processParse(placeholder,1,viewer,target).replace("%","");
+        return processParse(params.substring(params.indexOf("]")+2),1, Bukkit.getServer().getOfflinePlayer(name),target);
     }
 
     private String color(String text) {
