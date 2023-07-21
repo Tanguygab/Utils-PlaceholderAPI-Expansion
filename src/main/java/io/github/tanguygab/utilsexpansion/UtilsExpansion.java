@@ -81,12 +81,6 @@ public final class UtilsExpansion extends PlaceholderExpansion implements Relati
         return null;
     }
 
-    private String processPlayerArg(int sub, String params, OfflinePlayer viewer, Player target, Player v, Player t) {
-        String placeholder = params.substring(sub,params.indexOf("]"));
-        String name = processParse(placeholder,1,viewer,target).replace("%","");
-        return processParse(params.substring(params.indexOf("]")+2),1, Bukkit.getServer().getOfflinePlayer(name),target);
-    }
-
     private String color(String text) {
         return ChatColor.translateAlternateColorCodes('&',text);
     }
