@@ -69,6 +69,14 @@ public final class UtilsExpansion extends PlaceholderExpansion implements Relati
             String name = processParse(placeholder,1,viewer,target).replace("%","");
             return processParse(params.substring(params.indexOf("]")+2),1, viewer,Bukkit.getServer().getPlayer(name));
         }
+        if (arg.startsWith("parsesync_")) {
+            if (Bukkit.isPrimaryThread()) return processParse(text,1,viewer,target);
+            try {
+                return Bukkit.getServer().getScheduler().callSyncMethod(getPlaceholderAPI(),()->processParse(text,1,viewer,target)).get();
+            } catch (Exception e) {
+                return "<Error parsing placeholders synchronously>";
+            }
+        }
         if (arg.startsWith("parse")) {
             int number = 1;
             if (arg.startsWith("parse:"))
