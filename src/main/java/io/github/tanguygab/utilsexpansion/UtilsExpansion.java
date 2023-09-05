@@ -2,19 +2,24 @@ package io.github.tanguygab.utilsexpansion;
 
 
 import me.clip.placeholderapi.PlaceholderAPI;
+import me.clip.placeholderapi.expansion.Configurable;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import me.clip.placeholderapi.expansion.Relational;
+import me.clip.placeholderapi.expansion.Taskable;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 
 import javax.annotation.Nonnull;
 import java.util.*;
 
-public final class UtilsExpansion extends PlaceholderExpansion implements Relational {
+public final class UtilsExpansion extends PlaceholderExpansion implements Relational, Taskable, Configurable {
 
     private final List<String> placeholders = new ArrayList<>();
+    private final Map<String,Object> defaults = new HashMap<>();
+    private final Map<String,String> shortcuts = new HashMap<>();
 
     public UtilsExpansion() {
         List<String> placeholders = Arrays.asList("parse","parse:<num>","color","uncolor","uncolor:each","parseother:[name|placeholder]","escape","parserel:[name|placeholder]");
@@ -22,27 +27,44 @@ public final class UtilsExpansion extends PlaceholderExpansion implements Relati
             this.placeholders.add("%utils_"+placeholder+"_<placeholder>%");
             this.placeholders.add("%rel_utils_"+placeholder+"_<placeholder>%");
         });
-    }
-
-    @Override
-    public @Nonnull List<String> getPlaceholders() {
-        return placeholders;
+        Map<String,String> defaultShortCuts = new HashMap<>();
+        defaultShortCuts.put("othermath","%utils_parseother:[{0}]_math_{1}+1%");
+        defaults.put("shortcuts",defaultShortCuts);
     }
 
     @Override
     public @Nonnull String getIdentifier() {
         return "utils";
     }
-
     @Override
     public @Nonnull String getAuthor() {
         return "Tanguygab";
     }
-
     @Override
     public @Nonnull String getVersion() {
         return "1.0.3";
     }
+    @Override
+    public @Nonnull List<String> getPlaceholders() {
+        return placeholders;
+    }
+    @Override
+    public Map<String, Object> getDefaults() {
+        return defaults;
+    }
+
+    @Override
+    public void start() {
+        ConfigurationSection shortcuts = getConfigSection("shortcuts");
+        assert shortcuts != null;
+        shortcuts.getValues(false).forEach((name, shortcut)->{
+            this.shortcuts.put(name,shortcut.toString());
+            placeholders.add("%utils_shortcut_"+name+":arg0:arg1:...%");
+            placeholders.add("%rel_utils_shortcut_"+name+":arg0:arg1:...%");
+        });
+    }
+    @Override
+    public void stop() {}
 
     @Override
     public String onRequest(OfflinePlayer player, @Nonnull String params) {
@@ -59,33 +81,44 @@ public final class UtilsExpansion extends PlaceholderExpansion implements Relati
         String text = params.substring(arg.length()+1);
         if (arg.equalsIgnoreCase("escape")) return "%"+text+"%";
 
+        if (arg.equalsIgnoreCase("shortcut")) {
+            String[] args = text.split(":");
+            String shortcut = args[0];
+            if (!shortcuts.containsKey(shortcut)) return "";
+            shortcut = shortcuts.get(shortcut);
+            for (int i = 1; i < args.length; i++) shortcut = shortcut.replace("{"+(i-1)+"}",args[i]);
+            return processParse(shortcut,1,viewer,target,false);
+        }
+
         if (arg.startsWith("parseother:[") && params.contains("]")) {
             String placeholder = params.substring(12,params.indexOf("]"));
-            String name = processParse(placeholder,1,viewer,target).replace("%","");
-            return processParse(params.substring(params.indexOf("]")+2),1, Bukkit.getServer().getOfflinePlayer(name),target);
+            String name = processParse(placeholder, viewer,target).replace("%","");
+            return processParse(params.substring(params.indexOf("]")+2), Bukkit.getServer().getOfflinePlayer(name),target);
         }
         if (arg.startsWith("parserel:[") && params.contains("]")) {
             String placeholder = params.substring(10,params.indexOf("]"));
-            String name = processParse(placeholder,1,viewer,target).replace("%","");
-            return processParse(params.substring(params.indexOf("]")+2),1, viewer,Bukkit.getServer().getPlayer(name));
+            String name = processParse(placeholder, viewer,target).replace("%","");
+            return processParse(params.substring(params.indexOf("]")+2), viewer,Bukkit.getServer().getPlayer(name));
         }
-        if (arg.startsWith("parsesync_")) {
-            if (Bukkit.isPrimaryThread()) return processParse(text,1,viewer,target);
+        if (arg.equalsIgnoreCase("parsesync")) {
+            if (Bukkit.isPrimaryThread()) return processParse(text, viewer,target);
             try {
-                return Bukkit.getServer().getScheduler().callSyncMethod(getPlaceholderAPI(),()->processParse(text,1,viewer,target)).get();
+                return Bukkit.getServer().getScheduler().callSyncMethod(getPlaceholderAPI(),()->processParse(text, viewer,target)).get();
             } catch (Exception e) {
                 return "<Error parsing placeholders synchronously>";
             }
         }
         if (arg.startsWith("parse")) {
+            String[] args = arg.split(":");
             int number = 1;
-            if (arg.startsWith("parse:"))
-                try {number = Integer.parseInt(arg.substring(6));}
+            if (args.length > 1)
+                try {number = Integer.parseInt(args[1]);}
                 catch (Exception ignored) {}
-            return processParse(text,number,viewer,target);
+            boolean percent = args.length < 2 || args[2].equalsIgnoreCase("true");
+            return processParse(text,number,viewer,target,percent);
         }
-        if (arg.equalsIgnoreCase("color")) return color(processParse(text,1,viewer,target));
-        if (arg.startsWith("uncolor")) return ChatColor.stripColor(color(processParse(text,1,viewer,target,arg.equalsIgnoreCase("uncolor:each"))));
+        if (arg.equalsIgnoreCase("color")) return color(processParse(text, viewer,target));
+        if (arg.startsWith("uncolor")) return ChatColor.stripColor(color(processParse(text,1,viewer,target,true,arg.equalsIgnoreCase("uncolor:each"))));
         return null;
     }
 
@@ -94,11 +127,14 @@ public final class UtilsExpansion extends PlaceholderExpansion implements Relati
     }
 
 
-    private String processParse(String text, int number, OfflinePlayer viewer, Player target) {
-        return processParse(text,number,viewer,target,false);
+    private String processParse(String text, OfflinePlayer viewer, Player target) {
+        return processParse(text, 1,viewer,target,true,false);
     }
-    private String processParse(String text, int number, OfflinePlayer viewer, Player target, boolean uncolorEach) {
-        text = "%"+text+"%";
+    private String processParse(String text, int number, OfflinePlayer viewer, Player target, boolean percent) {
+        return processParse(text,number,viewer,target,percent,false);
+    }
+    private String processParse(String text, int number, OfflinePlayer viewer, Player target, boolean percent, boolean uncolorEach) {
+        if (percent) text = "%"+text+"%";
 
         for (int i = 0; i < number; i++) {
             findBracketPlaceholders(text);
@@ -109,8 +145,7 @@ public final class UtilsExpansion extends PlaceholderExpansion implements Relati
     }
 
     private String parsePlaceholders(String text, OfflinePlayer viewer, Player target) {
-        if (target == null)
-            return PlaceholderAPI.setPlaceholders(viewer,text);
+        if (target == null) return PlaceholderAPI.setPlaceholders(viewer,text);
         return PlaceholderAPI.setRelationalPlaceholders(viewer.getPlayer(),target,text);
     }
 
@@ -159,4 +194,5 @@ public final class UtilsExpansion extends PlaceholderExpansion implements Relati
         }
         return str.toString();
     }
+
 }
