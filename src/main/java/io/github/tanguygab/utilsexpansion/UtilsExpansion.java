@@ -42,7 +42,7 @@ public final class UtilsExpansion extends PlaceholderExpansion implements Relati
     }
     @Override
     public @Nonnull String getVersion() {
-        return "1.0.5";
+        return "1.0.6";
     }
     @Override
     public @Nonnull List<String> getPlaceholders() {
@@ -114,7 +114,7 @@ public final class UtilsExpansion extends PlaceholderExpansion implements Relati
             if (args.length > 1)
                 try {number = Integer.parseInt(args[1]);}
                 catch (Exception ignored) {}
-            boolean percent = args.length < 2 || args[2].equalsIgnoreCase("true");
+            boolean percent = args.length < 3 || args[2].equalsIgnoreCase("true");
             return processParse(text,number,viewer,target,percent);
         }
         if (arg.equalsIgnoreCase("color")) return color(processParse(text, viewer,target));
