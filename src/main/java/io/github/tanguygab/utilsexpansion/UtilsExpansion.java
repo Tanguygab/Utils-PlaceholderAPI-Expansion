@@ -22,7 +22,12 @@ public final class UtilsExpansion extends PlaceholderExpansion implements Relati
     private final Map<String,String> shortcuts = new HashMap<>();
 
     public UtilsExpansion() {
-        List<String> placeholders = Arrays.asList("parse","parse:<num>","color","uncolor","uncolor:each","parseother:[name|placeholder]","escape","parserel:[name|placeholder]");
+        List<String> placeholders = Arrays.asList("parse","parse:<num>",
+                "color","uncolor","uncolor:each",
+                "parseother:[name|placeholder]","parserel:[name|placeholder]",
+                "escape",
+                "try_<placeholder>","trycatch:<defaultvalue>_<placeholder>"
+        );
         placeholders.forEach(placeholder->{
             this.placeholders.add("%utils_"+placeholder+"_<placeholder>%");
             this.placeholders.add("%rel_utils_"+placeholder+"_<placeholder>%");
@@ -119,6 +124,14 @@ public final class UtilsExpansion extends PlaceholderExpansion implements Relati
         }
         if (arg.equalsIgnoreCase("color")) return color(processParse(text, viewer,target));
         if (arg.startsWith("uncolor")) return ChatColor.stripColor(color(processParse(text,1,viewer,target,true,arg.equalsIgnoreCase("uncolor:each"))));
+
+        if (arg.startsWith("try")) {
+            String def = "";
+            if (arg.startsWith("trycatch:")) def = arg.substring(9);
+            try {return processParse(text,viewer,target);}
+            catch (Exception e) {return def;}
+        }
+
         return null;
     }
 
