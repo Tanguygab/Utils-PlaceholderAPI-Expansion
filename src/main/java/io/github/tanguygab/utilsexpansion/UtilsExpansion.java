@@ -42,7 +42,7 @@ public final class UtilsExpansion extends PlaceholderExpansion implements Relati
     }
     @Override
     public @Nonnull String getVersion() {
-        return "1.0.6";
+        return "1.0.7";
     }
     @Override
     public @Nonnull List<String> getPlaceholders() {
@@ -87,7 +87,7 @@ public final class UtilsExpansion extends PlaceholderExpansion implements Relati
             if (!shortcuts.containsKey(shortcut)) return "";
             shortcut = shortcuts.get(shortcut);
             for (int i = 1; i < args.length; i++) shortcut = shortcut.replace("{"+(i-1)+"}",args[i]);
-            return processParse(shortcut,1,viewer,target,false);
+            return parsePlaceholders(shortcut,viewer,target);
         }
 
         if (arg.startsWith("parseother:[") && params.contains("]")) {
