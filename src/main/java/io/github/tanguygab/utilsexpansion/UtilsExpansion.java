@@ -25,7 +25,7 @@ public final class UtilsExpansion extends PlaceholderExpansion implements Relati
         List<String> placeholders = Arrays.asList("parse","parse:<num>",
                 "color","uncolor","uncolor:each",
                 "parseother:[name]","parseplaceholder:[placeholder]",
-                "parserel:[name|placeholder]",
+                "parserel:[name]","parserelplaceholder:[placeholder]",
                 "escape",
                 "try_<placeholder>","trycatch:<defaultvalue>_<placeholder>"
         );
