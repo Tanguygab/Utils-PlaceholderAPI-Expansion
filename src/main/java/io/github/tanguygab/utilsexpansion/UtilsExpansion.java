@@ -27,7 +27,8 @@ public final class UtilsExpansion extends PlaceholderExpansion implements Relati
                 "parseother:[name]","parseplaceholder:[placeholder]",
                 "parserel:[name]","parserelplaceholder:[placeholder]",
                 "escape",
-                "try_<placeholder>","trycatch:<defaultvalue>_<placeholder>"
+                "try_<placeholder>","trycatch:<defaultvalue>_<placeholder>",
+                "default_<placeholder>","default:<defaultvalue>_<placeholder>"
         );
         placeholders.forEach(placeholder->{
             this.placeholders.add("%utils_"+placeholder+"_<placeholder>%");
@@ -48,7 +49,7 @@ public final class UtilsExpansion extends PlaceholderExpansion implements Relati
     }
     @Override
     public @Nonnull String getVersion() {
-        return "1.0.8";
+        return "1.0.9";
     }
     @Override
     public @Nonnull List<String> getPlaceholders() {
@@ -102,7 +103,7 @@ public final class UtilsExpansion extends PlaceholderExpansion implements Relati
         }
         if (arg.startsWith("parseplaceholder:[") && params.contains("]")) {
             String placeholder = params.substring(18,params.indexOf("]"));
-            String name = processParse(placeholder, viewer, target);
+            String name = processParse(placeholder, viewer, target).replace("%","");
             return processParse(params.substring(params.indexOf("]")+2), Bukkit.getServer().getOfflinePlayer(name),target);
         }
 
@@ -138,10 +139,15 @@ public final class UtilsExpansion extends PlaceholderExpansion implements Relati
         if (arg.startsWith("uncolor")) return ChatColor.stripColor(color(processParse(text,1,viewer,target,true,arg.equalsIgnoreCase("uncolor:each"))));
 
         if (arg.startsWith("try")) {
-            String def = "";
-            if (arg.startsWith("trycatch:")) def = arg.substring(9);
+            String def = arg.startsWith("trycatch:") ? arg.substring(9) : "";
             try {return processParse(text,viewer,target);}
             catch (Exception e) {return def;}
+        }
+
+        if (arg.startsWith("default")) {
+            String def = arg.startsWith("default:") ? arg.substring(8) : "";
+            String output = processParse(text,viewer,target);
+            return output.equals("%"+text+"%") ? def : output;
         }
 
         return null;

@@ -3,7 +3,7 @@ plugins {
 }
 
 group = 'io.github.tanguygab'
-version = '1.0.8'
+version = '1.0.9'
 
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
