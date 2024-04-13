@@ -49,7 +49,7 @@ public final class UtilsExpansion extends PlaceholderExpansion implements Relati
     }
     @Override
     public @Nonnull String getVersion() {
-        return "1.0.9";
+        return "1.0.10";
     }
     @Override
     public @Nonnull List<String> getPlaceholders() {
@@ -176,8 +176,10 @@ public final class UtilsExpansion extends PlaceholderExpansion implements Relati
     }
 
     private String parsePlaceholders(String text, OfflinePlayer viewer, Player target) {
-        if (target == null) return PlaceholderAPI.setPlaceholders(viewer,text);
-        return PlaceholderAPI.setRelationalPlaceholders(viewer.getPlayer(),target,text);
+        text = PlaceholderAPI.setPlaceholders(viewer,text);
+        if (target != null)
+            text = PlaceholderAPI.setRelationalPlaceholders(viewer.getPlayer(),target,text);
+        return text;
     }
 
     private final Map<String,Map<Integer,Integer>> innerPlaceholders = new HashMap<>();
