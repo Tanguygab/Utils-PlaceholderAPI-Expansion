@@ -169,7 +169,7 @@ public final class UtilsExpansion extends PlaceholderExpansion implements Relati
 
         for (int i = 0; i < number; i++) {
             findBracketPlaceholders(text);
-            text = parseBracketPlaceholders(text,viewer,null,uncolorEach);
+            text = parseBracketPlaceholders(text,viewer,target,uncolorEach);
             text = parsePlaceholders(text,viewer,target);
         }
         return text;
