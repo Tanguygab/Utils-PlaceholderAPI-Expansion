@@ -49,7 +49,7 @@ public final class UtilsExpansion extends PlaceholderExpansion implements Relati
     }
     @Override
     public @Nonnull String getVersion() {
-        return "1.0.10";
+        return "1.0.11";
     }
     @Override
     public @Nonnull List<String> getPlaceholders() {
@@ -99,22 +99,22 @@ public final class UtilsExpansion extends PlaceholderExpansion implements Relati
 
         if (arg.startsWith("parseother:[") && params.contains("]")) {
             String name = params.substring(12,params.indexOf("]"));
-            return processParse(params.substring(params.indexOf("]")+2), Bukkit.getServer().getOfflinePlayer(name),target);
+            return processParse(params.substring(params.indexOf("]")+2), name.isEmpty() ? null : Bukkit.getServer().getOfflinePlayer(name),target);
         }
         if (arg.startsWith("parseplaceholder:[") && params.contains("]")) {
             String placeholder = params.substring(18,params.indexOf("]"));
             String name = processParse(placeholder, viewer, target).replace("%","");
-            return processParse(params.substring(params.indexOf("]")+2), Bukkit.getServer().getOfflinePlayer(name),target);
+            return processParse(params.substring(params.indexOf("]")+2), name.isEmpty() ? null : Bukkit.getServer().getOfflinePlayer(name),target);
         }
 
         if (arg.startsWith("parserel:[") && params.contains("]")) {
             String name = params.substring(10,params.indexOf("]"));
-            return processParse(params.substring(params.indexOf("]")+2), viewer,Bukkit.getServer().getPlayer(name));
+            return processParse(params.substring(params.indexOf("]")+2), viewer, name.isEmpty() ? null : Bukkit.getServer().getPlayer(name));
         }
         if (arg.startsWith("parserelplaceholder:[") && params.contains("]")) {
             String placeholder = params.substring(21,params.indexOf("]"));
             String name = processParse(placeholder, viewer,target).replace("%","");
-            return processParse(params.substring(params.indexOf("]")+2), viewer,Bukkit.getServer().getPlayer(name));
+            return processParse(params.substring(params.indexOf("]")+2), viewer, name.isEmpty() ? null : Bukkit.getServer().getPlayer(name));
         }
 
 
