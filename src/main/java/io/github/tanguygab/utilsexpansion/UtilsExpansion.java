@@ -49,7 +49,7 @@ public final class UtilsExpansion extends PlaceholderExpansion implements Relati
     }
     @Override
     public @Nonnull String getVersion() {
-        return "1.0.11";
+        return "1.0.12";
     }
     @Override
     public @Nonnull List<String> getPlaceholders() {
@@ -82,7 +82,6 @@ public final class UtilsExpansion extends PlaceholderExpansion implements Relati
         return process(params,viewer,target);
     }
 
-    @SuppressWarnings("deprecation")
     private String process(String params, OfflinePlayer viewer, Player target) {
         String arg = params.split("_")[0];
         String text = params.substring(arg.length()+1);
@@ -99,22 +98,22 @@ public final class UtilsExpansion extends PlaceholderExpansion implements Relati
 
         if (arg.startsWith("parseother:[") && params.contains("]")) {
             String name = params.substring(12,params.indexOf("]"));
-            return processParse(params.substring(params.indexOf("]")+2), name.isEmpty() ? null : Bukkit.getServer().getOfflinePlayer(name),target);
+            return processParse(params.substring(params.indexOf("]")+2), name.isEmpty() ? null : getPlayer(name),target);
         }
         if (arg.startsWith("parseplaceholder:[") && params.contains("]")) {
             String placeholder = params.substring(18,params.indexOf("]"));
             String name = processParse(placeholder, viewer, target).replace("%","");
-            return processParse(params.substring(params.indexOf("]")+2), name.isEmpty() ? null : Bukkit.getServer().getOfflinePlayer(name),target);
+            return processParse(params.substring(params.indexOf("]")+2), name.isEmpty() ? null : getPlayer(name),target);
         }
 
         if (arg.startsWith("parserel:[") && params.contains("]")) {
             String name = params.substring(10,params.indexOf("]"));
-            return processParse(params.substring(params.indexOf("]")+2), viewer, name.isEmpty() ? null : Bukkit.getServer().getPlayer(name));
+            return processParse(params.substring(params.indexOf("]")+2), viewer, name.isEmpty() ? null : getPlayer(name).getPlayer());
         }
         if (arg.startsWith("parserelplaceholder:[") && params.contains("]")) {
             String placeholder = params.substring(21,params.indexOf("]"));
             String name = processParse(placeholder, viewer,target).replace("%","");
-            return processParse(params.substring(params.indexOf("]")+2), viewer, name.isEmpty() ? null : Bukkit.getServer().getPlayer(name));
+            return processParse(params.substring(params.indexOf("]")+2), viewer, name.isEmpty() ? null : getPlayer(name).getPlayer());
         }
 
 
@@ -151,6 +150,17 @@ public final class UtilsExpansion extends PlaceholderExpansion implements Relati
         }
 
         return null;
+    }
+
+    private OfflinePlayer getPlayer(String uuidOrName) {
+        try {
+            return Bukkit.getServer().getPlayer(UUID.fromString(uuidOrName));
+        } catch (IllegalArgumentException e) {
+            Player player = Bukkit.getServer().getPlayer(uuidOrName);
+            if (player != null) return player;
+            //noinspection deprecation
+            return Bukkit.getServer().getOfflinePlayer(uuidOrName);
+        }
     }
 
     private String color(String text) {
