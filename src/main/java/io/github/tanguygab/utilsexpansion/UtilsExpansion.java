@@ -146,7 +146,7 @@ public final class UtilsExpansion extends PlaceholderExpansion implements Relati
         if (arg.startsWith("default")) {
             String def = arg.startsWith("default:") ? arg.substring(8) : "";
             String output = processParse(text,viewer,target);
-            return output.equals("%"+text+"%") ? def : output;
+            return output.isEmpty() || output.equals("%"+text+"%") ? def : output;
         }
 
         return null;
