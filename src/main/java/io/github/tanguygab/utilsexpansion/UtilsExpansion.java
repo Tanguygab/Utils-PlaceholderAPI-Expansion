@@ -1,6 +1,5 @@
 package io.github.tanguygab.utilsexpansion;
 
-
 import me.clip.placeholderapi.PlaceholderAPI;
 import me.clip.placeholderapi.expansion.Configurable;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
@@ -22,21 +21,22 @@ public final class UtilsExpansion extends PlaceholderExpansion implements Relati
     private final Map<String,String> shortcuts = new HashMap<>();
 
     public UtilsExpansion() {
-        List<String> placeholders = Arrays.asList("parse","parse:<num>",
-                "color","uncolor","uncolor:each",
-                "parseother:[name]","parseplaceholder:[placeholder]",
-                "parserel:[name]","parserelplaceholder:[placeholder]",
+        List<String> placeholders = List.of(
+                "parse", "parse:<num>",
+                "color", "uncolor", "uncolor:each",
+                "parseother:[name]", "parseplaceholder:[placeholder]",
+                "parserel:[name]", "parserelplaceholder:[placeholder]",
                 "escape",
-                "try_<placeholder>","trycatch:<defaultvalue>_<placeholder>",
-                "default_<placeholder>","default:<defaultvalue>_<placeholder>"
+                "try_<placeholder>", "trycatch:<defaultvalue>_<placeholder>",
+                "default_<placeholder>", "default:<defaultvalue>_<placeholder>"
         );
-        placeholders.forEach(placeholder->{
-            this.placeholders.add("%utils_"+placeholder+"_<placeholder>%");
-            this.placeholders.add("%rel_utils_"+placeholder+"_<placeholder>%");
+        placeholders.forEach(placeholder -> {
+            this.placeholders.add("%utils_" + placeholder + "_<placeholder>%");
+            this.placeholders.add("%rel_utils_" + placeholder + "_<placeholder>%");
         });
-        Map<String,String> defaultShortCuts = new HashMap<>();
-        defaultShortCuts.put("othermath","%utils_parseother:[{0}]_math_{1}+1%");
-        defaults.put("shortcuts",defaultShortCuts);
+        defaults.put("shortcuts", new HashMap<String, String>() {{
+            put("othermath", "%utils_parseother:[{0}]_math_{1}+1%");
+        }});
     }
 
     @Override
@@ -49,7 +49,7 @@ public final class UtilsExpansion extends PlaceholderExpansion implements Relati
     }
     @Override
     public @Nonnull String getVersion() {
-        return "1.0.12";
+        return "1.0.13";
     }
     @Override
     public @Nonnull List<String> getPlaceholders() {
@@ -178,7 +178,6 @@ public final class UtilsExpansion extends PlaceholderExpansion implements Relati
         if (percent) text = "%"+text+"%";
 
         for (int i = 0; i < number; i++) {
-            findBracketPlaceholders(text);
             text = parseBracketPlaceholders(text,viewer,target,uncolorEach);
             text = parsePlaceholders(text,viewer,target);
         }
@@ -192,48 +191,33 @@ public final class UtilsExpansion extends PlaceholderExpansion implements Relati
         return text;
     }
 
-    private final Map<String,Map<Integer,Integer>> innerPlaceholders = new HashMap<>();
-    private void findBracketPlaceholders(String params) {
-        if (innerPlaceholders.containsKey(params)) return;
-        char[] chars = params.toCharArray();
-        int newPos = 0;
-        Map<Integer,Integer> innerPlaceholders = new LinkedHashMap<>();
-        List<Integer> brackets = new ArrayList<>();
-        for (int i=0; i < chars.length; i++) {
-            char c = chars[i];
-            boolean escaped = i != 0 && chars[i-1]=='\\';
+    private String parseBracketPlaceholders(String params, OfflinePlayer viewer, Player target, boolean uncolorEach) {
+        StringBuilder str = new StringBuilder(params);
+
+        for (int i = str.length() - 1; i >= 0; i--) {
+            char c = str.charAt(i);
+            boolean escaped = i != 0 && str.charAt(i - 1) == '\\';
+
             if (escaped) {
-                newPos++;
+                --i;
                 continue;
             }
-            if (c == '{')
-                brackets.add(i-newPos);
-            if (c == '}' && !brackets.isEmpty()) {
-                innerPlaceholders.put(brackets.get(brackets.size()-1),i-newPos);
-                brackets.remove(brackets.size()-1);
+
+            if (c == '{') {
+                int end = -1;
+                for (int j = i+2; j < str.length(); j++) {
+                    if (str.charAt(j) == '}' && str.charAt(j-1) != '\\') {
+                        end = j;
+                        break;
+                    }
+                }
+                if (end == -1) continue;
+
+                String placeholder = str.substring(i, end + 1);
+                String parsed = parsePlaceholders("%" + placeholder.substring(1, placeholder.length()-1) + "%", viewer, target);
+                if (uncolorEach) parsed = ChatColor.stripColor(color(parsed));
+                str.replace(i, end + 1, parsed);
             }
-        }
-        this.innerPlaceholders.put(params,innerPlaceholders);
-    }
-
-    public String parseBracketPlaceholders(String params, OfflinePlayer viewer, Player target, boolean uncolorEach) {
-        Map<Integer,Integer> innerPlaceholders = this.innerPlaceholders.get(params);
-        StringBuilder str = new StringBuilder(params.replace("\\",""));
-        Map<Integer,Integer> newPositions = new LinkedHashMap<>();
-        for (int pos1 : innerPlaceholders.keySet()) {
-            int pos2 = innerPlaceholders.get(pos1);
-
-            for (int p : newPositions.keySet()) {
-                int l = newPositions.get(p);
-                if (p < pos1) pos1-=l;
-                if (p < pos2) pos2-=l;
-            }
-            String sub = str.substring(pos1,pos2+1);
-            String parsed = parsePlaceholders("%"+sub.substring(1,sub.length()-1)+"%",viewer,target);
-            if (uncolorEach) parsed = ChatColor.stripColor(color(parsed));
-            str.replace(pos1, pos2 + 1, parsed);
-
-            newPositions.put(pos1,sub.length()-parsed.length());
         }
         return str.toString();
     }
