@@ -1,0 +1,7 @@
+[versions]
+paper = "1.20.2-R0.1-SNAPSHOT"
+papi = "2.11.7"
+
+[libraries]
+paper = { group = "io.papermc.paper", name = "paper-api", version.ref = "paper" }
+papi = { group = "me.clip", name = "placeholderapi", version.ref = "papi" }
