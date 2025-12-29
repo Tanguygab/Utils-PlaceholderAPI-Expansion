@@ -49,7 +49,7 @@ public final class UtilsExpansion extends PlaceholderExpansion implements Relati
     }
     @Override
     public @Nonnull String getVersion() {
-        return "1.0.13";
+        return "1.0.14";
     }
     @Override
     public @Nonnull List<String> getPlaceholders() {
@@ -158,8 +158,11 @@ public final class UtilsExpansion extends PlaceholderExpansion implements Relati
         } catch (IllegalArgumentException e) {
             Player player = Bukkit.getServer().getPlayer(uuidOrName);
             if (player != null) return player;
-            //noinspection deprecation
-            return Bukkit.getServer().getOfflinePlayer(uuidOrName);
+            try {
+                return Bukkit.getServer().getOfflinePlayerIfCached(uuidOrName);
+            } catch (NoSuchMethodError er) {
+                return Bukkit.getServer().getOfflinePlayer(uuidOrName);
+            }
         }
     }
 

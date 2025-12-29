@@ -3,13 +3,13 @@ plugins {
 }
 
 group = 'io.github.tanguygab'
-version = '1.0.13'
+version = '1.0.14'
 
 repositories {
     mavenCentral()
     maven {
-        name = 'spigotmc-repo'
-        url = 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/'
+        name = 'paper-repo'
+        url = 'https://repo.papermc.io/repository/maven-public/'
     }
     maven {
         name = 'sonatype'
@@ -22,6 +22,6 @@ repositories {
 }
 
 dependencies {
-    compileOnly 'org.spigotmc:spigot-api:1.20.2-R0.1-SNAPSHOT'
+    compileOnly 'io.papermc.paper:paper-api:1.20.2-R0.1-SNAPSHOT'
     compileOnly 'me.clip:placeholderapi:2.11.6'
 }
